@@ -1,0 +1,8 @@
+<attributes>
+    <other style="fix"/>
+    <para language="de"/>
+    <para role="tocmain1"/>
+    <para role="tocmain2"/>
+    <para role="tocmain3"/>    
+</attributes>
+

@@ -1,0 +1,9 @@
+<Root>
+  <Fields>
+    <Field name="abc" displayName="aaa" position="1"/>
+    <Field name="pqr" displayName="ppp" position="2"/>
+    <Field name="abc" displayName="aaa" position="3"/>
+    <Field name="xyz" displayName="zzz" position="4"/>
+    <Field name="abc" displayName="aaa" position="5"/>
+  </Fields>
+</Root>
