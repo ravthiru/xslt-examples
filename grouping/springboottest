@@ -1,0 +1,70 @@
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = {
+    Route1.class,
+    Route2.class,
+    ...
+})
+@EnableAutoConfiguration
+@DisableJmx
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+public class RouteTest {
+
+  @TestConfiguration
+  static class Config {
+    @Bean
+    CamelContextConfiguration contextConfiguration() {
+      return new CamelContextConfiguration() {
+        @Override
+        public void beforeApplicationStart(CamelContext camelContext) {
+          // configure Camel here
+        }
+
+        @Override
+        public void afterApplicationStart(CamelContext camelContext) {
+          // Start your manual routes here
+        }
+      };
+    }
+
+    @Bean
+    RouteBuilder routeBuilder() {
+      return new RouteBuilder() {
+        @Override
+        public void configure() {
+          from("direct:someEndpoint").to("mock:done");
+        }
+      };
+    }
+
+    // further beans ...
+  }
+
+  @Produce(uri = "direct:start")
+  private ProducerTemplate template;
+  @EndpointInject(uri = "mock:done")
+  private MockEndpoint mockDone;
+
+  @Test
+  public void testCamelRoute() throws Exception {
+    mockDone.expectedMessageCount(1);
+
+    Map<String, Object> headers = new HashMap<>();
+    ...
+    template.sendBodyAndHeaders("test", headers);
+
+    mockDone.assertIsSatisfied();
+  }
+}
+
+
+Spring Boot distinguishes between @Configuration and @TestConfiguration. The primer one will replace any existing configuration, if annotated on a top-level class, while @TestConfiguration will be run in addition to the other configurations.
+
+Further, in larger projects you might run into auto-configuration issues as you can't rely on Spring Boot 2 to configure your custom database pooling or what not correctly or in cases where you have a specific directory structure and the configurations are not located within a direct ancestor directory. In that case it is proabably preferable to omit the @EnableAutoConfiguration annotation. In order to tell Spring to still auto-configure Camel you can simply pass CamelAutoConfiguration.class to the classes mentioned in @SpringBootTest
+
+@SpringBootTest(webEnvironment = WebEnvironment.NONE, classes = {
+    Route1.class,
+    Route2.class,
+    RouteTest.Config.class,
+    CamelAutoConfiguration.class
+}
+As no automatic configuration is performed, Spring won't load the test configuration inside your test class nor initialize Camel as well. By adding those configs to the boot classes manually Spring will do it for you.
